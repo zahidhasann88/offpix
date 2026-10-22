@@ -123,7 +123,7 @@ export function gradientError(
   return s / 1000;
 }
 
-function largestComponent(m: Uint8Array, w: number, h: number): Uint8Array {
+function largestComponent(m: Uint8Array, w: number, _h: number): Uint8Array {
   const label = new Int32Array(m.length);
   let best = 0,
     bestSize = 0,

@@ -91,7 +91,7 @@ describe("seam blending", () => {
   it("upscales alpha when the source has transparency", async () => {
     const src = gradient(4, 4);
     src.fill(0, 3, 4);
-    const run: RunTile = async (chw, w, h) => {
+    const run: RunTile = async (_chw, w, h) => {
       const out = new Float32Array(3 * w * 2 * h * 2);
       return out;
     };

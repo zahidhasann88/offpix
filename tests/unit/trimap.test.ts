@@ -173,7 +173,7 @@ describe("solveAlpha", () => {
 describe("orientation spread", () => {
   const w = 64,
     h = 64;
-  const img = (f: (x: number, y: number) => number) => {
+  const img = (f: (x: number, y: number) => boolean | number) => {
     const px = new Uint8ClampedArray(w * h * 4);
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++)
