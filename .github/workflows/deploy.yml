@@ -1,0 +1,41 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # pnpm version comes from package.json "packageManager".
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/cache@v4
+        with:
+          path: public/models
+          key: models-pages-${{ hashFiles('src/models/manifest.json') }}
+      # Cloudflare Pages profile: small models + WASM-only runtime (see src/buildProfile.ts).
+      - run: node scripts/download-models.mjs --pages
+      # Our own exports (BiRefNet Lite 512 fp16) come from the GitHub Release named in the
+      # manifest: every part's size + sha256, the parts manifest and the assembled file are
+      # verified; a missing part or any mismatch fails the deploy.
+      - name: Fetch and verify release model parts
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          for tag in $(node -e "const m=require('./src/models/manifest.json');console.log([...new Set(m.models.filter(x=>x.release).map(x=>x.release.tag))].join(' '))"); do
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir release-assets --clobber
+          done
+          node scripts/release-models.mjs fetch --from release-assets
+      - run: pnpm build:pages
+      # Stops here with a list if any file breaks Pages' 25 MiB limit.
+      - run: pnpm check:pages
+      # The parts must have shipped (pagesPartModels drops a model whose file is missing).
+      - run: test -f dist/models/birefnet-lite-512-offpix-fp16.onnx.parts.json
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=offpix

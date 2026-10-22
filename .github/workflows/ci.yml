@@ -1,0 +1,36 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # pnpm version comes from package.json "packageManager".
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      # THIRD_PARTY_NOTICES.md must match the manifest and the installed packages.
+      - run: pnpm check:notices
+      - run: pnpm typecheck
+      # Manifest hashes vs the published release assets (parts + parts manifest); fails on any
+      # mismatch or missing part, and leaves the verified model in public/models for the e2e run.
+      - name: Check release model parts
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          for tag in $(node -e "const m=require('./src/models/manifest.json');console.log([...new Set(m.models.filter(x=>x.release).map(x=>x.release.tag))].join(' '))"); do
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir release-assets --clobber
+          done
+          node scripts/release-models.mjs fetch --from release-assets
+      - run: pnpm lint
+      - run: pnpm test
+      # Real models are only needed for the e2e flows; cache them by manifest hash.
+      - uses: actions/cache@v4
+        with:
+          path: public/models
+          key: models-${{ hashFiles('src/models/manifest.json') }}
+      - run: pnpm download:models
+      # The deployable build must stay within Cloudflare Pages' file limits.
+      - run: pnpm build:pages && pnpm check:pages
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

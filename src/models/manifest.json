@@ -1,0 +1,506 @@
+{
+  "models": [
+    {
+      "id": "u2netp",
+      "tool": "background-remove",
+      "variant": "small",
+      "name": "U2-Net portable (fast)",
+      "url": "/models/u2netp.onnx",
+      "size": 4574861,
+      "sha256": "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
+      "license": "Apache-2.0 (U2-Net) / MIT (rembg ONNX export)",
+      "source": "https://github.com/danielgatis/rembg/releases/tag/v0.0.0",
+      "input": {
+        "name": "input.1",
+        "shape": [
+          1,
+          3,
+          320,
+          320
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "output": {
+        "name": "1959",
+        "shape": [
+          1,
+          1,
+          320,
+          320
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "Small/fast variant. 7 outputs; the final saliency map is \"1959\". rembg preprocessing (rembg/sessions/u2netp.py): ImageNet mean/std at 320x320, min-max normalised output. Small and fast but soft: thin or dark edges (e.g. a phone frame against a shadow) can be cut; ISNet handles them. Runs on WASM: its MaxPool nodes use ceil_mode, which the ORT WebGPU backend does not implement (verified 2026-10-17, onnxruntime-web 1.30.0).",
+      "downloadUrl": "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx",
+      "webgpu": false
+    },
+    {
+      "id": "isnet-general-use",
+      "tool": "background-remove",
+      "variant": "quality",
+      "name": "ISNet general use (quality)",
+      "url": "/models/isnet-general-use.onnx",
+      "size": 178648008,
+      "sha256": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a",
+      "license": "Apache-2.0 (ISNet/DIS) / MIT (rembg ONNX export)",
+      "source": "https://github.com/danielgatis/rembg/releases/tag/v0.0.0",
+      "input": {
+        "name": "input_image",
+        "shape": [
+          1,
+          3,
+          1024,
+          1024
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "std": [
+          1,
+          1,
+          1
+        ]
+      },
+      "output": {
+        "name": "output_image",
+        "shape": [
+          1,
+          1,
+          1024,
+          1024
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "Quality variant. 12 outputs; only \"output_image\" is fetched. rembg preprocessing (rembg/sessions/dis_general_use.py): mean 0.5, std 1.0, min-max normalised output. Runs on WASM: its MaxPool nodes use ceil_mode, which the ORT WebGPU backend does not implement (verified 2026-10-17, onnxruntime-web 1.30.0).",
+      "downloadUrl": "https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-general-use.onnx",
+      "webgpu": false,
+      "tier": 2
+    },
+    {
+      "id": "birefnet-lite-1024",
+      "tool": "background-remove",
+      "variant": "birefnet-lite-1024",
+      "name": "Max quality: BiRefNet Lite 1024 (needs a strong GPU)",
+      "url": "/models/birefnet-lite-1024-offpix.onnx",
+      "size": 181250000,
+      "sha256": "cbe81f9b362400db4bfd1e350cb5524b8dc83661d92a116c8009b59f635119d1",
+      "license": "MIT (BiRefNet, ZhengPeng7/BiRefNet_lite checkpoint and code) / our export",
+      "source": "Exported by offpix from huggingface.co/ZhengPeng7/BiRefNet_lite @ aa62cd87eafb9cc43056d08ef3615a14628b831d (model.safetensors + birefnet.py, MIT; LICENSE also at github.com/ZhengPeng7/BiRefNet)",
+      "input": {
+        "name": "input_image",
+        "shape": [
+          1,
+          3,
+          1024,
+          1024
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "output": {
+        "name": "output_image",
+        "shape": [
+          1,
+          1,
+          1024,
+          1024
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "activation": "sigmoid"
+      },
+      "notes": "Fixed 1024x1024 export of the upstream checkpoint by scripts/export-birefnet.py v1 --size 1024 (GridSample deform conv: 0 GatherND, max Concat 6, no Split). Equivalent to upstream PyTorch: max |Δ sigmoid| 6.3e-5 on 6 images. fp32 only: the fp16 file computes wrong alpha on WebGPU (ORT 1.30's GridSample shader fails to compile in fp16, silently). Verified 2026-10-19 on Intel UHD 620: WebGPU 17.9 s warm, ~9 GB Chrome private memory; WASM 19 s, 3.3 GB (close to the 4 GB WASM limit). Opt-in only, offered when the adapter meets gpuRequirements.",
+      "export": {
+        "script": "scripts/export-birefnet.py v1",
+        "checkpoint": {
+          "url": "https://huggingface.co/ZhengPeng7/BiRefNet_lite/resolve/aa62cd87eafb9cc43056d08ef3615a14628b831d/model.safetensors",
+          "size": 177634392,
+          "sha256": "4417d89795250e698c3cb0ae8df15743810065f646f48a694fdfa7ca052d0815"
+        },
+        "code": {
+          "url": "https://huggingface.co/ZhengPeng7/BiRefNet_lite/blob/aa62cd87eafb9cc43056d08ef3615a14628b831d/birefnet.py",
+          "commit": "aa62cd87eafb9cc43056d08ef3615a14628b831d"
+        },
+        "requirements": "scripts/requirements-export.txt",
+        "size": 1024
+      },
+      "wasm": false,
+      "optIn": true,
+      "gpuRequirements": {
+        "minMaxBufferSize": 2147483648,
+        "minStorageBuffersPerShaderStage": 8,
+        "minDeviceMemoryGB": 8
+      },
+      "dtype": "fp32",
+      "verified": [
+        "webgpu",
+        "wasm"
+      ]
+    },
+    {
+      "id": "birefnet-lite-512",
+      "tool": "background-remove",
+      "variant": "birefnet-lite-512",
+      "name": "BiRefNet Lite 512 (best for most devices)",
+      "url": "/models/birefnet-lite-512-offpix-fp16.onnx",
+      "size": 93179484,
+      "sha256": "c1c2af25a7f09e1a0c13f477e5a0e366d6186b038d32c3a1de7b2619ebd06036",
+      "license": "MIT (BiRefNet, ZhengPeng7/BiRefNet_lite checkpoint and code) / our export",
+      "source": "Exported by offpix from huggingface.co/ZhengPeng7/BiRefNet_lite @ aa62cd87eafb9cc43056d08ef3615a14628b831d (model.safetensors + birefnet.py, MIT; LICENSE also at github.com/ZhengPeng7/BiRefNet)",
+      "input": {
+        "name": "input_image",
+        "shape": [
+          1,
+          3,
+          512,
+          512
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "output": {
+        "name": "output_image",
+        "shape": [
+          1,
+          1,
+          512,
+          512
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "activation": "sigmoid"
+      },
+      "notes": "Fixed 512x512 export of the upstream checkpoint by scripts/export-birefnet.py v1 (torch 2.7.1+cpu, scripts/requirements-export.txt). The deformable convolution is decomposed into GridSample + MatMul (no GatherND); checked against torchvision (max |diff| 1.7e-5) and the whole model against upstream PyTorch (max |Δ sigmoid| 3.6e-5 on 8 images, scripts/check-birefnet-export.py). Output is logits: sigmoid, no min-max. Runs on WASM (onnxruntime-web 1.30, 4 threads: 11-12 s at 512², peak ~1.2-1.8 GB) and on WebGPU (Intel UHD 620: 8.1 s warm; alpha within 1/255 of WASM), verified 2026-10-19. WASM uses the fp16 file (93 MB; max |Δ sigmoid| vs fp32 1.9e-2, <= 0.18 % of pixels > 1/255); WebGPU must use the fp32 file: in fp16 ORT 1.30's WebGPU GridSample shader fails to compile and the output is silently wrong (measured on the 1024 export).",
+      "export": {
+        "script": "scripts/export-birefnet.py v1",
+        "checkpoint": {
+          "url": "https://huggingface.co/ZhengPeng7/BiRefNet_lite/resolve/aa62cd87eafb9cc43056d08ef3615a14628b831d/model.safetensors",
+          "size": 177634392,
+          "sha256": "4417d89795250e698c3cb0ae8df15743810065f646f48a694fdfa7ca052d0815"
+        },
+        "code": {
+          "url": "https://huggingface.co/ZhengPeng7/BiRefNet_lite/blob/aa62cd87eafb9cc43056d08ef3615a14628b831d/birefnet.py",
+          "commit": "aa62cd87eafb9cc43056d08ef3615a14628b831d"
+        },
+        "requirements": "scripts/requirements-export.txt",
+        "fp16": "scripts/export-birefnet.py fp16 (onnxconverter-common, fp32 inputs/outputs kept)"
+      },
+      "tier": 1,
+      "heavy": true,
+      "webgpuFile": {
+        "url": "/models/birefnet-lite-512-offpix.onnx",
+        "size": 181248928,
+        "sha256": "4563de29945ca2234f3a035407871d9dcddd44ae6b6d42fb17e3ead491475c9e",
+        "dtype": "fp32",
+        "verified": [
+          "webgpu",
+          "wasm"
+        ]
+      },
+      "dtype": "fp16",
+      "verified": [
+        "wasm"
+      ],
+      "pagesParts": true,
+      "release": {
+        "tag": "models-v1",
+        "parts": [
+          {
+            "name": "birefnet-lite-512-offpix-fp16.onnx.part000",
+            "size": 20971520,
+            "sha256": "b87d0bc586ba3795069d394dea3cf409dab292c2021c584bdeba727b48effe6f"
+          },
+          {
+            "name": "birefnet-lite-512-offpix-fp16.onnx.part001",
+            "size": 20971520,
+            "sha256": "c272f59dce108756b334a15ba5df3988969711009f2173d59e7f525e416bee6c"
+          },
+          {
+            "name": "birefnet-lite-512-offpix-fp16.onnx.part002",
+            "size": 20971520,
+            "sha256": "36b3f2046532f96091af12a95695de59a1268f0ce436edf13a06994976230686"
+          },
+          {
+            "name": "birefnet-lite-512-offpix-fp16.onnx.part003",
+            "size": 20971520,
+            "sha256": "42a751437a408703f9ea2853e14d78382884a2c03bd2e2f04206dea10c3ccb46"
+          },
+          {
+            "name": "birefnet-lite-512-offpix-fp16.onnx.part004",
+            "size": 9293404,
+            "sha256": "3345ff2cb7a03fdb0fd6bfda8ec900d80fc1df27063e49ab0be9061155ccfe50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "realesr-general-x4v3",
+      "tool": "upscale",
+      "variant": "x4-small",
+      "name": "Real-ESRGAN general x4v3 (fast)",
+      "url": "/models/realesr-general-x4v3.onnx",
+      "size": 4866417,
+      "sha256": "1940a93ee08283a0a7286183186357b1688fe9fa8ede74604b424586aaddf112",
+      "license": "BSD-3-Clause",
+      "source": "https://huggingface.co/CoderViking/realesr-general-x4v3-onnx/tree/c6a971706797c7502945a2b4c4274fce4900d4ab (ONNX export of xinntao/Real-ESRGAN v0.2.5.0 realesr-general-x4v3.pth, sha256 8dc7edb9ac80ccdc30c3a5dca6616509367f05fbc184ad95b731f05bece96292)",
+      "input": {
+        "name": "input",
+        "shape": [
+          1,
+          3,
+          "h",
+          "w"
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0,
+          0,
+          0
+        ],
+        "std": [
+          1,
+          1,
+          1
+        ]
+      },
+      "output": {
+        "name": "output",
+        "shape": [
+          1,
+          3,
+          "4h",
+          "4w"
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "SRVGGNetCompact (32 convs), fp32, dynamic h/w. Output is not clipped in-graph (u8 conversion clamps). Verified 2026-10-17: all 101 tensors of the official .pth are byte-identical in the ONNX file.",
+      "downloadUrl": "https://huggingface.co/CoderViking/realesr-general-x4v3-onnx/resolve/c6a971706797c7502945a2b4c4274fce4900d4ab/realesr-general-x4v3.onnx",
+      "scale": 4,
+      "inputMultiple": 1
+    },
+    {
+      "id": "real-esrgan-x2",
+      "tool": "upscale",
+      "variant": "x2",
+      "name": "Real-ESRGAN x2plus (quality, 2x)",
+      "url": "/models/real_esrgan_x2.onnx",
+      "size": 67073434,
+      "sha256": "7115ba92e8a1bfa63d68558ef006ef3d91273a068d321b1439f8bb1c9179002c",
+      "license": "BSD-3-Clause",
+      "source": "https://huggingface.co/SceneWorks/real-esrgan-onnx/tree/09f741bac80a246b407da3ee902bf5f3291b602f (exported from xinntao/Real-ESRGAN RealESRGAN_x2plus.pth)",
+      "input": {
+        "name": "input",
+        "shape": [
+          1,
+          3,
+          "h",
+          "w"
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0,
+          0,
+          0
+        ],
+        "std": [
+          1,
+          1,
+          1
+        ]
+      },
+      "output": {
+        "name": "output",
+        "shape": [
+          1,
+          3,
+          "2h",
+          "2w"
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "RRDBNet 23-block, fp32, dynamic h/w. Input/output RGB in [0,1]. x2plus uses pixel-unshuffle: input h/w must be even.",
+      "downloadUrl": "https://huggingface.co/SceneWorks/real-esrgan-onnx/resolve/09f741bac80a246b407da3ee902bf5f3291b602f/real_esrgan_x2.onnx",
+      "scale": 2,
+      "inputMultiple": 2
+    },
+    {
+      "id": "real-esrgan-x4",
+      "tool": "upscale",
+      "variant": "x4",
+      "name": "Real-ESRGAN x4plus (quality, 4x)",
+      "url": "/models/real_esrgan_x4.onnx",
+      "size": 67051616,
+      "sha256": "5c586662929cbc686c1a5c38d9c060dbdb4ea5863a1f7672b8c0761e6b89c033",
+      "license": "BSD-3-Clause",
+      "source": "https://huggingface.co/SceneWorks/real-esrgan-onnx/tree/09f741bac80a246b407da3ee902bf5f3291b602f (exported from xinntao/Real-ESRGAN RealESRGAN_x4plus.pth)",
+      "input": {
+        "name": "input",
+        "shape": [
+          1,
+          3,
+          "h",
+          "w"
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0,
+          0,
+          0
+        ],
+        "std": [
+          1,
+          1,
+          1
+        ]
+      },
+      "output": {
+        "name": "output",
+        "shape": [
+          1,
+          3,
+          "4h",
+          "4w"
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "RRDBNet 23-block, fp32, dynamic h/w. Input/output RGB in [0,1].",
+      "downloadUrl": "https://huggingface.co/SceneWorks/real-esrgan-onnx/resolve/09f741bac80a246b407da3ee902bf5f3291b602f/real_esrgan_x4.onnx",
+      "scale": 4,
+      "inputMultiple": 1
+    },
+    {
+      "id": "yolox-nano",
+      "tool": "object-count",
+      "variant": "small",
+      "name": "YOLOX Nano (fast)",
+      "url": "/models/yolox_nano.onnx",
+      "size": 3659407,
+      "sha256": "c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+      "license": "Apache-2.0",
+      "source": "https://github.com/Megvii-BaseDetection/YOLOX/releases/tag/0.1.1rc0",
+      "input": {
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          416,
+          416
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0,
+          0,
+          0
+        ],
+        "std": [
+          0.00392156862745098,
+          0.00392156862745098,
+          0.00392156862745098
+        ],
+        "channels": "BGR"
+      },
+      "output": {
+        "name": "output",
+        "shape": [
+          1,
+          3549,
+          85
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "Official YOLOX ONNX export (COCO, 80 classes). Input: BGR, raw 0-255 (std 1/255), letterboxed top-left onto gray 114. Output: raw predictions for strides 8/16/32 (52²+26²+13² anchors) x [cx, cy, w, h, objectness, 80 class probs]; grid-decoded in src/tools/object-count.ts. MaxPool ceil_mode=0, so WebGPU can run it.",
+      "downloadUrl": "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.onnx"
+    },
+    {
+      "id": "yolox-tiny",
+      "tool": "object-count",
+      "variant": "quality",
+      "name": "YOLOX Tiny (quality)",
+      "url": "/models/yolox_tiny.onnx",
+      "size": 20219662,
+      "sha256": "427cc366d34e27ff7a03e2899b5e3671425c262ea2291f88bb942bc1cc70b0f7",
+      "license": "Apache-2.0",
+      "source": "https://github.com/Megvii-BaseDetection/YOLOX/releases/tag/0.1.1rc0",
+      "input": {
+        "name": "images",
+        "shape": [
+          1,
+          3,
+          416,
+          416
+        ],
+        "layout": "NCHW",
+        "dtype": "float32",
+        "mean": [
+          0,
+          0,
+          0
+        ],
+        "std": [
+          0.00392156862745098,
+          0.00392156862745098,
+          0.00392156862745098
+        ],
+        "channels": "BGR"
+      },
+      "output": {
+        "name": "output",
+        "shape": [
+          1,
+          3549,
+          85
+        ],
+        "layout": "NCHW",
+        "dtype": "float32"
+      },
+      "notes": "Official YOLOX ONNX export (COCO, 80 classes). Input: BGR, raw 0-255 (std 1/255), letterboxed top-left onto gray 114. Output: raw predictions for strides 8/16/32 (52²+26²+13² anchors) x [cx, cy, w, h, objectness, 80 class probs]; grid-decoded in src/tools/object-count.ts. MaxPool ceil_mode=0, so WebGPU can run it.",
+      "downloadUrl": "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_tiny.onnx"
+    }
+  ],
+  "verified": "2026-10-16: sha256, size and input/output names checked against the downloaded files; 2026-10-17: realesr-general-x4v3 added and verified against the official weights; 2026-10-17: yolox-nano/tiny added (sha256, size, I/O names checked against the official 0.1.1rc0 release files); 2026-10-18: birefnet-lite fp32/fp16 added (sha256 and size match the Hugging Face LFS metadata at the pinned commit; upstream license MIT checked on ZhengPeng7/BiRefNet_lite and github.com/ZhengPeng7/BiRefNet); 2026-10-19: birefnet-lite-512 exported by us from ZhengPeng7/BiRefNet_lite @ aa62cd87 (checkpoint sha256 matches HF LFS; MIT on the HF repo and github.com/ZhengPeng7/BiRefNet); 2026-10-19: birefnet-lite-1024 replaces the patched official 1024 files (our own export, same checkpoint)"
+}

@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+dist/
+dist-pages/
+.vite/
+*.tsbuildinfo
+
+# Test output
+tests/e2e/fixtures/street.jpg
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Python (scripts/export-birefnet.py)
+scripts/.venv/
+scripts/.export-cache/
+__pycache__/
+*.pyc
+
+# Models and runtime (rebuilt by pnpm install / pnpm download:models)
+public/models/
+public/ort/
+release-assets/
+
+# Temporary files
+*.tmp
+*.bak

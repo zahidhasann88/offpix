@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: 246 246 244;
+  --surface: 255 255 255;
+  --surface-2: 244 244 242;
+  --surface-3: 234 234 231;
+  --border: 226 226 222;
+  --border-strong: 205 205 200;
+  --fg: 24 24 23;
+  --muted: 90 90 86;
+  --accent: 15 108 98;
+  --accent-hover: 11 88 80;
+  --accent-fg: 255 255 255;
+  --accent-text: 13 98 89;
+  --accent-subtle: 228 242 239;
+  --focus: 15 108 98;
+  --danger: 176 32 32;
+  --danger-bg: 253 240 240;
+  --warning: 133 77 0;
+  --warning-bg: 254 246 225;
+  --success: 22 110 52;
+  --success-bg: 236 248 239;
+}
+.dark {
+  color-scheme: dark;
+  --bg: 15 15 16;
+  --surface: 24 24 26;
+  --surface-2: 33 33 36;
+  --surface-3: 42 42 46;
+  --border: 44 44 48;
+  --border-strong: 66 66 72;
+  --fg: 238 238 236;
+  --muted: 166 166 160;
+  --accent: 94 214 194;
+  --accent-hover: 128 226 209;
+  --accent-fg: 8 32 29;
+  --accent-text: 110 220 201;
+  --accent-subtle: 18 52 47;
+  --focus: 110 220 201;
+  --danger: 255 140 136;
+  --danger-bg: 56 22 22;
+  --warning: 247 196 102;
+  --warning-bg: 52 38 12;
+  --success: 120 220 150;
+  --success-bg: 18 46 28;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  @apply font-sans text-sm antialiased bg-bg text-fg;
+}
+input[type="range"] {
+  accent-color: rgb(var(--accent));
+}
+input[type="checkbox"] {
+  accent-color: rgb(var(--accent));
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--focus));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Transparency checkerboard behind cut-out previews. */
+.checkerboard {
+  background-color: #fff;
+  background-image: conic-gradient(
+    #d6d6d3 25%,
+    transparent 0 50%,
+    #d6d6d3 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}
+.dark .checkerboard {
+  background-color: #26262a;
+  background-image: conic-gradient(
+    #3a3a40 25%,
+    transparent 0 50%,
+    #3a3a40 0 75%,
+    transparent 0
+  );
+}
